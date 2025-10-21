@@ -27,33 +27,42 @@ unzip -q rawdata.zip
 ###########################################
 # Complete assignment here
 
+
 # 1. Create a directory named data
-mkdir -p data
+mkdir data
 
 # 2. Move the ./rawdata directory to ./data/raw
 mv ./rawdata ./data/raw
-
 # 3. List the contents of the ./data/raw directory
-ls ./data/raw
+cd data/raw
+ls
+# 4. In ./data/processed, create the following directories: server_logs, user_logs, and event_logs
+cd ..
+mkdir processed
+cd processed
+mkdir server_logs
+mkdir user_logs
+mkdir event_logs
+# 5. Copy all server log files (files with "server" in the name AND a .log extension) from ./data/raw to ./data/processed/server_logs
+cd..
+cp raw/*server*.log processed/server_logs
+# 6. Repeat the above step for user logs and event logs
+cp raw/*user*.log processed/user_logs
+cp raw/*event*.log processed/event_logs
+# 7. For user privacy, remove all files containing IP addresses (files with "ipaddr" in the filename) from ./data/raw and ./data/processed/user_logs
+cd raw
+rm *ipaddr*
+cd ..
+cd processed/user_logs
+rm *ipaddr*
+# 8. Create a file named ./data/inventory.txt that lists all the files in the subfolders of ./data/processed
+cd ..
+cd ..
+ls processed/event_logs > inventory.txt
+ls processed/server_logs >> inventory.txt
+ls processed/user_logs >> inventory.txt
 
-# 4. In ./data/processed, create directories for different log types
-# Use brace expansion to create multiple directories with one command
-mkdir -p ./data/processed/{server,user,event}_logs
-
-# 5 & 6. Copy log files from raw to their respective processed directories
-# Use a for loop to reduce code duplication
-for log_type in server user event; do
-    cp ./data/raw/*${log_type}*.log ./data/processed/${log_type}_logs/
-done
-
-# 7. For user privacy, remove all files containing IP addresses
-# Use rm -f to prevent errors if no files match the pattern
-rm -f ./data/raw/*ipaddr*.log
-rm -f ./data/processed/user_logs/*ipaddr*.log
-
-# 8. Create a sorted inventory of all files in the processed subfolders
-# Pipe the output of 'find' to 'sort' for consistent, readable results
-find ./data/processed -type f | sort > ./data/inventory.txt
+###########################################
 
 ###########################################
 
