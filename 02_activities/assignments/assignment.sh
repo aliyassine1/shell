@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+set -euxo pipefail
 
 ############################################
 # DSI CONSULTING INC. Project setup script #
@@ -13,10 +13,10 @@ if [ -d newproject ]; then
   echo "Directory 'newproject' already exists. Please remove it before running this script."
   exit 1
 fi
-mkdir newproject
+mkdir -p newproject
 cd newproject
 
-mkdir analysis output
+mkdir -p analysis output
 touch README.md
 touch analysis/main.py
 
@@ -28,28 +28,32 @@ unzip -q rawdata.zip
 # Complete assignment here
 
 # 1. Create a directory named data
-mkdir data
+mkdir -p data
+
 # 2. Move the ./rawdata directory to ./data/raw
 mv ./rawdata ./data/raw
+
 # 3. List the contents of the ./data/raw directory
 ls ./data/raw
-# 4. In ./data/processed, create the following directories: server_logs, user_logs, and event_logs
-mkdir -p ./data/processed/server_logs
-mkdir -p ./data/processed/user_logs
-mkdir -p ./data/processed/event_logs
-# 5. Copy all server log files (files with "server" in the name AND a .log extension) from ./data/raw to ./data/processed/server_logs
-cp ./data/raw/*server*.log ./data/processed/server_logs/    
 
-# 6. Repeat the above step for user logs and event logs
-cp ./data/raw/*user*.log ./data/processed/user_logs/
-cp ./data/raw/*event*.log ./data/processed/event_logs/    
+# 4. In ./data/processed, create directories for different log types
+# Use brace expansion to create multiple directories with one command
+mkdir -p ./data/processed/{server,user,event}_logs
 
-# 7. For user privacy, remove all files containing IP addresses (files with "ipaddr" in the filename) from ./data/raw and ./data/processed/user_logs
-rm ./data/raw/*ipaddr*.log
-rm ./data/processed/user_logs/*ipaddr*.log    
+# 5 & 6. Copy log files from raw to their respective processed directories
+# Use a for loop to reduce code duplication
+for log_type in server user event; do
+    cp ./data/raw/*${log_type}*.log ./data/processed/${log_type}_logs/
+done
 
-# 8. Create a file named ./data/inventory.txt that lists all the files in the subfolders of ./data/processed
-find ./data/processed -type f > ./data/inventory.txt
+# 7. For user privacy, remove all files containing IP addresses
+# Use rm -f to prevent errors if no files match the pattern
+rm -f ./data/raw/*ipaddr*.log
+rm -f ./data/processed/user_logs/*ipaddr*.log
+
+# 8. Create a sorted inventory of all files in the processed subfolders
+# Pipe the output of 'find' to 'sort' for consistent, readable results
+find ./data/processed -type f | sort > ./data/inventory.txt
 
 ###########################################
 
